@@ -16,8 +16,15 @@ int main() {
 	static unsigned long prev_time = 0;
 
 	while (true) { 
-		if (stoi(exec("cat /sys/class/power_supply/BAT0/capacity")) <= 10 && 
-			time(0) - prev_time >= 300) {
+		bool should_notify = {
+			stoi(exec("cat /sys/class/power_supply/BAT0/capacity")) <= 10 && 
+			time(0) - prev_time >= 300 && 
+			exec("cat /sys/class/power_supply/BAT0/status")[0] == 'D'
+		};
+
+		cerr << should_notify << std::endl;
+
+		if (should_notify) {
 			NotifyNotification* n = 
 				notify_notification_new("Warning! 10% charge remains.", "Plug in your laptop.", "battery-caution");
 			notify_notification_set_timeout(n, 300000);
